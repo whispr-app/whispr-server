@@ -1,4 +1,5 @@
-import { globSync } from 'glob';
+import fs from 'fs';
+import { join } from 'path';
 
 export interface Tree {
   Branches: Tree[];
@@ -13,7 +14,7 @@ export class RouteHandler {
   }
 
   public generateTree(path?: string): Tree {
-    const routes = globSync(`${path || this.path}/*`);
+    const routes = fs.readdirSync(path || this.path);
 
     const tree: Tree = {
       Branches: [],
@@ -26,9 +27,9 @@ export class RouteHandler {
 
     routes.forEach(route => {
       if (route.endsWith('index.ts')) {
-        tree.Module = route;
+        tree.Module = join(path || this.path, route);
       } else {
-        const child = this.generateTree(route);
+        const child = this.generateTree(join(path || this.path, route));
         tree.Branches.push(child);
       }
     });
