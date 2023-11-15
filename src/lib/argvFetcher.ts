@@ -5,11 +5,11 @@
  * @example
  * Example of usage:
  * ```
- * argvFetcher(process.argv, ['-a', '--arg'], 'test')
+ * argvFetcher(process.argv, ['-A', '--arg'], 'test')
  * ```
  *
  * @param argvs Process.argv list
- * @param args List of args wanted to be fetched (format: -a, --arg)
+ * @param args List of args wanted to be fetched (format: -A, --arg)
  * @param defaultReturn (optional) A default value to return if arg isn't found
  *
  * @returns the value of the argument
