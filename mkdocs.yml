@@ -1,0 +1,77 @@
+site_name: Docs
+theme:
+  name: material
+
+  language: en
+
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotate
+    - content.code.copy
+  
+  palette: 
+    scheme: slate
+    primary: indigo
+    accent: indigo
+
+  font:
+    text: IBM Plex Sans
+    code: IBM Plex Mono
+
+  logo: assets/logo.svg
+  favicon: assets/favicon.png
+
+  icon:
+    repo: fontawesome/brands/github
+  
+plugins:
+  # - social:
+  #     cards_layout_options:
+  #       font_family: IBM Plex Sans
+  - blog
+
+site_url: https://whispr.cx/
+
+copyright: Copyright &copy; 2023 Whispr
+
+repo_url: https://github.com/whispr-app/whispr-server
+repo_name: whispr-app/server
+
+extra:
+  homepage: https://whispr.cx/
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/whispr-app
+#   alternate:
+#     - name: English
+#       link: /en/ 
+#       lang: en
+#     - name: Deutsch
+#       link: /de/
+#       lang: de
+  
+markdown_extensions:
+  # - pymdownx.highlight:
+  #     anchor_linenums: true
+  # - pymdownx.superfences 
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - admonition
+  - pymdownx.arithmatex:
+      generic: true
+  - footnotes
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.mark
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
