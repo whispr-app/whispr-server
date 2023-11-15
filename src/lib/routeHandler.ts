@@ -16,23 +16,23 @@ export class RouteHandler {
     this.path = path;
   }
 
-  public generateTree(path?: string): Tree {
-    const routes = fs.readdirSync(path || this.path);
+  public generateTree(_path?: string): Tree {
+    const routes = fs.readdirSync(_path || this.path);
 
     const tree: Tree = {
       Branches: [],
       Module: null,
       path:
-        path?.split('/').filter(route => route !== '') ||
+        _path?.split('/').filter(route => route !== '') ||
         this.path.split('/').filter(route => route !== '') ||
         [],
     };
 
     routes.forEach(route => {
       if (route.endsWith('index.ts')) {
-        tree.Module = join(path || this.path, route);
+        tree.Module = join(_path || this.path, route);
       } else {
-        const child = this.generateTree(join(path || this.path, route));
+        const child = this.generateTree(join(_path || this.path, route));
         tree.Branches.push(child);
       }
     });
