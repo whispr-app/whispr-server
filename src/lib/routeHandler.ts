@@ -9,6 +9,9 @@ export interface Tree {
 
 export class RouteHandler {
   private path: string;
+  /**
+   * @param path Path to start (e.g. 'src/v1')
+   */
   constructor(path: string) {
     this.path = path;
   }
@@ -37,6 +40,10 @@ export class RouteHandler {
     return tree;
   }
 
+  /**
+   * @param tree Tree object to walk through
+   * @param callback Callback function to call on each descendent
+   */
   public walk(tree: Tree, callback: (tree: Tree) => void): void {
     callback(tree);
     tree.Branches.forEach(child => this.walk(child, callback));
