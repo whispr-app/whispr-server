@@ -8,7 +8,8 @@
     "start": "ts-node --files -r tsconfig-paths/register src/index.ts",
     "lint": "eslint src",
     "prisma:migrate": "pnpm exec prisma migrate dev --name init",
-    "prisma:push": "pnpm exec prisma db push"
+    "prisma:push": "pnpm exec prisma db push",
+    "prisma:studio": "pnpm exec prisma studio"
   },
   "keywords": [],
   "author": "Morgan Dilling",
