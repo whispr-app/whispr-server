@@ -131,9 +131,3 @@ app.listen(port, async () => {
   }
   console.log('Domain check passed');
 });
-
-app.get('/test', (req: Request, res: Response) => {
-  res.status(200).json({
-    'is-alive': true,
-  });
-});
