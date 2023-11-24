@@ -8,6 +8,7 @@ import argvFetcher from '@lib/argvFetcher';
 import cors from 'cors';
 import axios from 'axios';
 import path from 'path';
+import responseTime from 'response-time';
 
 // Exceptions
 import PackageVersionNotFound from 'exceptions/PackageVersionNotFound';
@@ -36,6 +37,14 @@ if (!version || (version && !version.match(/^(\d+\.)?(\d+\.)?(\*|\d+)$/)))
 // Express
 const app = express();
 expressWs(app);
+
+app.use(
+  responseTime((req: Request, res: Response, time) => {
+    console.log(
+      `${req.method} ${req.originalUrl} ${res.statusCode} ${time.toFixed(2)}ms`
+    );
+  })
+);
 
 app.use(bodyparser.json());
 app.use(
