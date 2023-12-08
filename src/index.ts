@@ -38,13 +38,17 @@ if (!version || (version && !version.match(/^(\d+\.)?(\d+\.)?(\*|\d+)$/)))
 const app = express();
 expressWs(app);
 
-app.use(
-  responseTime((req: Request, res: Response, time) => {
-    console.log(
-      `${req.method} ${req.originalUrl} ${res.statusCode} ${time.toFixed(2)}ms`
-    );
-  })
-);
+if (env === 'dev') {
+  app.use(
+    responseTime((req: Request, res: Response, time) => {
+      console.log(
+        `${req.method} ${req.originalUrl} ${res.statusCode} ${time.toFixed(
+          2
+        )}ms`
+      );
+    })
+  );
+}
 
 app.use(bodyparser.json());
 app.use(
