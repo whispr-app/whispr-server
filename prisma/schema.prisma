@@ -17,3 +17,8 @@ model User {
   encryptedPrivateKey String
   publicKey           String
 }
+
+model Token {
+  id  String @id @default(auto()) @map("_id") @db.ObjectId
+  jti String @unique
+}

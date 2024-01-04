@@ -5,6 +5,50 @@ import { ZodError } from 'zod';
 import { version } from './argvHandler';
 import path from 'path';
 import fs from 'fs';
+import { verifyToken } from './tokens';
+
+declare module 'express' {
+  interface Request {
+    session?: { userId: string };
+  }
+}
+
+export const authorisation = async (
+  request: Request<unknown>,
+  response: Response,
+  next: NextFunction
+) => {
+  if (request.method === 'OPTIONS')
+    return response.send({
+      message: 'Preflight check successful.',
+    });
+
+  if (!request.headers.authorization)
+    return next(
+      new AppError('unauthorised', '`Authorization` header required')
+    );
+
+  if (!request.headers.authorization.startsWith('Bearer'))
+    return next(
+      new AppError(
+        'unauthorised',
+        '`Authorization` header must be a Bearer token'
+      )
+    );
+
+  const token = request.headers.authorization.split(' ')[1];
+
+  if (!token) return next(new AppError('unauthorised', 'No token provided'));
+
+  try {
+    console.log(await verifyToken(token));
+
+    request.session = { userId: (await verifyToken(token)).payload.sub };
+    next();
+  } catch (e) {
+    return next(new AppError('validation', 'Invalid token'));
+  }
+};
 
 export const validate =
   (schema: AnyZodObject) =>
@@ -56,10 +100,17 @@ export const handleRouting = async (app: Express) => {
       await import(path.join(process.cwd(), `src/v${v}/index.ts`))
     ).default;
 
+    const authenticatedRoutes: string[] = (
+      await import(path.join(process.cwd(), `src/v${v}/authenticatedRoutes.ts`))
+    ).default;
+
+    console.log(authenticatedRoutes);
+
     // sub-routes
     fs.readdirSync(path.join(process.cwd(), `src/v${v}`)).forEach(
       async file => {
         if (file === 'index.ts') return;
+        if (file === 'authenticatedRoutes.ts') return;
         const router: Router = (
           await import(
             path.join(process.cwd(), `src/v${v}/${file}/${file}.router.ts`)
@@ -68,7 +119,9 @@ export const handleRouting = async (app: Express) => {
 
         const routeName = file.split('.')[0];
 
-        mainRouter.use(`/${routeName}`, router);
+        if (authenticatedRoutes.includes(routeName))
+          mainRouter.use(`/${routeName}`, authorisation, router);
+        else mainRouter.use(`/${routeName}`, router);
       }
     );
 

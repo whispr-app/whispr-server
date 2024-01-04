@@ -1,4 +1,6 @@
+import { domain } from '@lib/argvHandler';
 import prisma from '@lib/prisma';
+import { generateToken } from '@lib/tokens';
 import { Prisma } from '@prisma/client';
 import { randomBytes, pbkdf2, BinaryLike } from 'crypto';
 
@@ -70,4 +72,14 @@ export const getUser = async (userId: string) => {
       id: userId,
     },
   });
+};
+
+export const generateUserToken = async (userId: string) => {
+  const token = generateToken({
+    audience: domain || 'localhost',
+    subject: userId,
+    expiresIn: 900000, // 15 minutes
+  });
+
+  return token;
 };

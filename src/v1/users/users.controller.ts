@@ -18,9 +18,14 @@ export const register: RequestHandler = async (
     publicKey,
   });
 
-  res
-    .status(201)
-    .json({ id: user.id, nickname: user.nickname, publicKey: user.publicKey });
+  const token = await usersService.generateUserToken(user.id);
+
+  res.status(201).json({
+    id: user.id,
+    nickname: user.nickname,
+    publicKey: user.publicKey,
+    token,
+  });
 };
 
 export const getUser: RequestHandler<GetUserSchema> = async (
@@ -41,7 +46,9 @@ export const getUser: RequestHandler<GetUserSchema> = async (
     return next(new AppError('validation', 'Specified user was not found.'));
   }
 
-  res
-    .status(200)
-    .json({ id: user.id, nickname: user.nickname, publicKey: user.publicKey });
+  res.status(200).json({
+    id: user.id,
+    nickname: user.nickname,
+    publicKey: user.publicKey,
+  });
 };

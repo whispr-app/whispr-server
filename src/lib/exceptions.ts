@@ -14,6 +14,20 @@ export class AppError extends Error {
   }
 }
 
+export class InvalidTokenOptions extends Error {
+  constructor() {
+    super();
+    this.message = 'Invalid token options';
+  }
+}
+
+export class InvalidToken extends Error {
+  constructor(reason: string) {
+    super();
+    this.message = `Invalid token: ${reason}`;
+  }
+}
+
 export class DomainCheckNotValid extends Error {
   constructor(domain: string) {
     super();
