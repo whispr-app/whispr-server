@@ -5,6 +5,7 @@ import prisma from './prisma';
 
 // export const privateSigningKey = crypto.randomBytes(256).toString('hex');
 
+// TODO: REMOVE THIS ASAP
 export const privateSigningKey =
   '46adffdd1a3dba07cfb54c0ddab1baa0d3c03376939ee712189e7b42aa1058a7e1f17a114047943ac526f543038ba06ba7f4080a04fdd4fdd78d6be4d3d8f03d8b72070e5d8c244a31910ed05635051f08fd3bcdfafa205c9bbb4c5e1614610c4d185d149e04679abf253cf771d2f318fda353aef7e6c2ceeba31f3f209c78e59825d41c8af89f30ae01098dee8a205ddd2575d8830490215388fbe8891367fb8c4247438dccad3567e3b46b929430bea565ccb329c64fbfed5e7d746c24ece9bbeb610b170c1053b5a2e49d8f45dba2f1802d4fbd3f6d360f450d63938182223bf330d66e1ddcc89acae06b9212f5b4a1cfd274e6e2f579499b0a6f7ffb74ce';
 
@@ -60,6 +61,7 @@ export const generateToken = async (options: TokenOptions) => {
   await prisma.token.create({
     data: {
       jti: payload.jti,
+      userId: payload.sub,
     },
   });
 
