@@ -1,11 +1,12 @@
 import type { NextFunction, Request, Response, Router, Express } from 'express';
-import { AppError } from './exceptions';
+import { AppError, InvalidToken } from './exceptions';
 import type { AnyZodObject } from 'zod';
 import { ZodError } from 'zod';
 import { version } from './argvHandler';
 import path from 'path';
 import fs from 'fs';
 import { verifyToken } from './tokens';
+import { matchRoute } from './authenticatedRoutes';
 
 declare module 'express' {
   interface Request {
@@ -22,6 +23,12 @@ export const authorisation = async (
     return response.send({
       message: 'Preflight check successful.',
     });
+
+  const requestRoute = request.originalUrl.split('/').slice(1).join('/');
+
+  const match = matchRoute(requestRoute);
+
+  if (match) return next();
 
   if (!request.headers.authorization)
     return next(
@@ -41,11 +48,19 @@ export const authorisation = async (
   if (!token) return next(new AppError('unauthorised', 'No token provided'));
 
   try {
-    console.log(await verifyToken(token));
+    console.log('awaiting token check');
 
-    request.session = { userId: (await verifyToken(token)).payload.sub };
+    const tokenCheck = await verifyToken(token);
+
+    request.session = { userId: tokenCheck.payload.sub };
+
+    console.log('token check successful');
     next();
   } catch (e) {
+    if (e instanceof InvalidToken) {
+      return next(new AppError('validation', e.message));
+    }
+
     return next(new AppError('validation', 'Invalid token'));
   }
 };
@@ -100,12 +115,6 @@ export const handleRouting = async (app: Express) => {
       await import(path.join(process.cwd(), `src/v${v}/index.ts`))
     ).default;
 
-    const authenticatedRoutes: string[] = (
-      await import(path.join(process.cwd(), `src/v${v}/authenticatedRoutes.ts`))
-    ).default;
-
-    console.log(authenticatedRoutes);
-
     // sub-routes
     fs.readdirSync(path.join(process.cwd(), `src/v${v}`)).forEach(
       async file => {
@@ -119,9 +128,7 @@ export const handleRouting = async (app: Express) => {
 
         const routeName = file.split('.')[0];
 
-        if (authenticatedRoutes.includes(routeName))
-          mainRouter.use(`/${routeName}`, authorisation, router);
-        else mainRouter.use(`/${routeName}`, router);
+        mainRouter.use(`/${routeName}`, authorisation, router);
       }
     );
 

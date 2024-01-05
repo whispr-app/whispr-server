@@ -1,6 +1,10 @@
 import * as crypto from 'crypto';
 import z from 'zod';
-import { InvalidTokenOptions, InvalidToken } from './exceptions';
+import {
+  InvalidTokenOptions,
+  InvalidToken,
+  CannotRevokeToken,
+} from './exceptions';
 import prisma from './prisma';
 
 // export const privateSigningKey = crypto.randomBytes(256).toString('hex');
@@ -69,6 +73,8 @@ export const generateToken = async (options: TokenOptions) => {
 };
 
 export const verifyToken = async (token: string) => {
+  console.log('verifying token');
+
   const [encodedHeader, encodedPayload, signature] = token.split('.');
 
   const header = JSON.parse(Buffer.from(encodedHeader, 'base64url').toString());
@@ -76,16 +82,26 @@ export const verifyToken = async (token: string) => {
     Buffer.from(encodedPayload, 'base64url').toString()
   );
 
+  console.log('fetched header and payload');
+
+  console.log('calculating signature...');
+
   const calculatedSignature = crypto
     .createHmac('sha256', privateSigningKey)
     .update(`${encodedHeader}.${encodedPayload}`)
     .digest('base64url');
+
+  console.log('signature', signature);
+
+  console.log('finding token in db...');
 
   const tokenExists = prisma.token.findUnique({
     where: {
       jti: payload.jti,
     },
   });
+
+  console.log('token exists', tokenExists);
 
   if (!tokenExists) {
     throw new InvalidToken('Token does not exist');
@@ -95,12 +111,20 @@ export const verifyToken = async (token: string) => {
     throw new InvalidToken('Signature does not match');
   }
 
+  console.log('token verified, checking expiry...');
+
   if (payload.exp < Date.now()) {
-    await prisma.token.delete({
-      where: {
-        jti: payload.jti,
-      },
-    });
+    try {
+      console.log('token expired, deleting...');
+
+      await prisma.token.delete({
+        where: {
+          jti: payload.jti,
+        },
+      });
+
+      console.log('token deleted');
+    } catch {}
     throw new InvalidToken('Token has expired');
   }
 
@@ -112,11 +136,15 @@ export const revokeToken = async (token: string) => {
 
   const { payload } = await verifyToken(token);
 
-  await prisma.token.delete({
-    where: {
-      jti: payload.jti,
-    },
-  });
+  try {
+    await prisma.token.delete({
+      where: {
+        jti: payload.jti,
+      },
+    });
+  } catch (e) {
+    throw new CannotRevokeToken(payload.jti);
+  }
 
   return signature;
 };

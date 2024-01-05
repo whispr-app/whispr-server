@@ -24,7 +24,21 @@ export class InvalidTokenOptions extends Error {
 export class InvalidToken extends Error {
   constructor(reason: string) {
     super();
-    this.message = `Invalid token: ${reason}`;
+    this.message = reason;
+  }
+}
+
+export class CannotRevokeToken extends Error {
+  constructor(token: string) {
+    super();
+    this.message = `Cannot revoke token ${token}`;
+  }
+}
+
+export class RecordNotFound extends Error {
+  constructor(record: string) {
+    super();
+    this.message = `${record} not found`;
   }
 }
 
