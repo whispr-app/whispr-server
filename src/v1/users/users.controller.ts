@@ -3,6 +3,7 @@ import prisma from '@lib/prisma';
 import { GetUserSchema, RegisterSchema } from './users.schemas';
 import * as usersService from './users.service';
 import { AppError } from '@lib/exceptions';
+import { generateUserToken } from 'v1/auth/auth.service';
 
 export const register: RequestHandler = async (
   req: Request<unknown, unknown, RegisterSchema>,
@@ -18,7 +19,7 @@ export const register: RequestHandler = async (
     publicKey,
   });
 
-  const token = await usersService.generateUserToken(user.id);
+  const token = await generateUserToken(user.id);
 
   res.status(201).json({
     id: user.id,
