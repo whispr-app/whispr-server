@@ -24,6 +24,23 @@ export const TokenOptionsSchema = z.object({
 
 export type TokenOptions = z.infer<typeof TokenOptionsSchema>;
 
+export type TokenHeader = {
+  alg: 'HS256';
+  typ: 'JWT';
+};
+
+export const TokenPayload = z.object({
+  iss: z.string(),
+  aud: z.string(),
+  sub: z.string(),
+  exp: z.number(),
+  iat: z.number(),
+  jti: z.string(),
+  ide: z.optional(z.string()),
+});
+
+export type TokenPayload = z.infer<typeof TokenPayload>;
+
 export const generateToken = async (options: TokenOptions) => {
   try {
     TokenOptionsSchema.parse(options);
@@ -35,12 +52,12 @@ export const generateToken = async (options: TokenOptions) => {
 
   const { audience, subject, expiresIn, identifier } = options;
 
-  const header = {
+  const header: TokenHeader = {
     alg: 'HS256',
     typ: 'JWT',
   };
 
-  const payload = {
+  const payload: TokenPayload = {
     iss: 'Whispr',
     aud: audience,
     sub: subject,
@@ -77,8 +94,10 @@ export const verifyToken = async (token: string) => {
 
   const [encodedHeader, encodedPayload, signature] = token.split('.');
 
-  const header = JSON.parse(Buffer.from(encodedHeader, 'base64url').toString());
-  const payload = JSON.parse(
+  const header: TokenHeader = JSON.parse(
+    Buffer.from(encodedHeader, 'base64url').toString()
+  );
+  const payload: TokenPayload = JSON.parse(
     Buffer.from(encodedPayload, 'base64url').toString()
   );
 
@@ -95,7 +114,7 @@ export const verifyToken = async (token: string) => {
 
   console.log('finding token in db...');
 
-  const tokenExists = prisma.token.findUnique({
+  const tokenExists = await prisma.token.findUnique({
     where: {
       jti: payload.jti,
     },
