@@ -10,7 +10,7 @@ import { matchRoute } from './authenticatedRoutes';
 
 declare module 'express' {
   interface Request {
-    session?: { userId: string };
+    session?: { userId: string; token: string };
   }
 }
 
@@ -52,7 +52,7 @@ export const authorisation = async (
 
     const tokenCheck = await verifyToken(token);
 
-    request.session = { userId: tokenCheck.payload.sub };
+    request.session = { userId: tokenCheck.payload.sub, token };
 
     console.log('token check successful');
     next();
