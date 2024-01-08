@@ -10,7 +10,24 @@ export const createUser = async (user: Prisma.UserCreateInput) => {
     select: {
       id: true,
       nickname: true,
-      publicKey: true,
+    },
+  });
+};
+
+export const updateKeyPair = async (
+  userId: string,
+  encryptedPrivateKey: string,
+  publicKey: string
+) => {
+  return await prisma.keyPair.create({
+    data: {
+      encryptedPrivateKey,
+      publicKey,
+      user: {
+        connect: {
+          id: userId,
+        },
+      },
     },
   });
 };
@@ -19,6 +36,9 @@ export const getUser = async (userId: string) => {
   return await prisma.user.findUnique({
     where: {
       id: userId,
+    },
+    include: {
+      keyPair: true,
     },
   });
 };

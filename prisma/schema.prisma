@@ -11,12 +11,19 @@ datasource db {
 }
 
 model User {
-  id                  String  @id @default(auto()) @map("_id") @db.ObjectId
-  nickname            String
-  password            String
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  nickname String
+  password String
+  tokens   Token[]
+  keyPair  KeyPair?
+}
+
+model KeyPair {
+  id                  String @id @default(auto()) @map("_id") @db.ObjectId
   encryptedPrivateKey String
   publicKey           String
-  tokens              Token[]
+  user                User   @relation(fields: [userId], references: [id])
+  userId              String @unique @db.ObjectId
 }
 
 model Token {

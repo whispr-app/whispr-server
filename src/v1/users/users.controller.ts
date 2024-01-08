@@ -1,6 +1,10 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import prisma from '@lib/prisma';
-import { GetUserSchema, RegisterSchema } from './users.schemas';
+import {
+  GetUserSchema,
+  RegisterSchema,
+  UpdateKeyPairSchema,
+} from './users.schemas';
 import * as usersService from './users.service';
 import { AppError } from '@lib/exceptions';
 import { generateUserToken } from 'v1/auth/auth.service';
@@ -10,13 +14,11 @@ export const register: RequestHandler = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { password, nickname, encryptedPrivateKey, publicKey } = req.body;
+  const { password, nickname } = req.body;
 
   const user = await usersService.createUser({
     password,
     nickname,
-    encryptedPrivateKey,
-    publicKey,
   });
 
   const token = await generateUserToken(user.id);
@@ -24,9 +26,38 @@ export const register: RequestHandler = async (
   res.status(201).json({
     id: user.id,
     nickname: user.nickname,
-    publicKey: user.publicKey,
     token,
   });
+};
+
+export const updateKeyPairs = async (
+  req: Request<unknown, unknown, UpdateKeyPairSchema>,
+  res: Response,
+  next: NextFunction
+) => {
+  const { encryptedPrivateKey, publicKey } = req.body;
+
+  const userId = req.session?.userId;
+
+  if (!userId) return next(new AppError('unauthorised', 'No user ID provided'));
+
+  const exitingKeyPair = await prisma.keyPair.findFirst({
+    where: {
+      userId,
+    },
+  });
+
+  if (exitingKeyPair)
+    return next(
+      new AppError(
+        'validation',
+        'Specified user has already established key pair.'
+      )
+    );
+
+  await usersService.updateKeyPair(userId, encryptedPrivateKey, publicKey);
+
+  res.status(200).send();
 };
 
 export const getUser: RequestHandler<GetUserSchema> = async (
@@ -47,9 +78,17 @@ export const getUser: RequestHandler<GetUserSchema> = async (
     return next(new AppError('validation', 'Specified user was not found.'));
   }
 
+  if (!user?.keyPair)
+    return next(
+      new AppError(
+        'validation',
+        "Specified user hasn't established key pair yet."
+      )
+    );
+
   res.status(200).json({
     id: user.id,
     nickname: user.nickname,
-    publicKey: user.publicKey,
+    publicKey: user.keyPair.publicKey,
   });
 };

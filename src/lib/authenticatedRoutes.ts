@@ -1,5 +1,9 @@
 export const excludedRoutes = ['v1/users/*', 'v1/auth/*'];
-export const includedRoutes = ['v1/auth/sign-out', 'v1/auth/sign-out-all'];
+export const includedRoutes = [
+  'v1/auth/sign-out',
+  'v1/auth/sign-out-all',
+  'v1/users/update-key-pair',
+];
 
 export const matchRoute = (route: string) => {
   if (includedRoutes.includes(route)) return false;
