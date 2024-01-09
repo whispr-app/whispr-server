@@ -21,11 +21,11 @@ export const register: RequestHandler = async (
     nickname,
   });
 
-  const token = await generateUserToken(user.id);
+  // TODO: Change to refresh once MVP is done
+  const token = await generateUserToken(user.id, 'access');
 
   res.status(201).json({
     id: user.id,
-    nickname: user.nickname,
     token,
   });
 };

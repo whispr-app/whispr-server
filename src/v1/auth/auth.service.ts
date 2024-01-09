@@ -51,11 +51,33 @@ export const isPasswordValid = async (
   return recalculatedHash === completeHash;
 };
 
-export const generateUserToken = async (userId: string) => {
+export const generateUserToken = async (
+  userId: string,
+  type: 'refresh' | 'access',
+  identifier: string = 'global'
+) => {
+  let expiry: number;
+  switch (type) {
+    case 'access':
+      expiry = 86400000; // 1 day
+      break;
+    case 'refresh':
+      expiry = 7776000000; // 90 days
+      break;
+  }
+
+  if (identifier === 'settings') {
+    expiry = 900000; // 15 minutes
+  }
+
+  expiry = 7776000000; // 90 days (until MVP is done)
+
   const token = generateToken({
     audience: domain || 'localhost',
     subject: userId,
-    expiresIn: 8.64e7, // 1 day
+    expiresIn: expiry,
+    type,
+    identifier,
   });
 
   return token;

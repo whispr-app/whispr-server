@@ -4,6 +4,10 @@ export const includedRoutes = [
   'v1/auth/sign-out-all',
   'v1/users/update-key-pair',
 ];
+export const refreshRoutes = [
+  'v1/auth/generate-access-token',
+  'v1/auth/generate-refresh-token',
+];
 
 export const matchRoute = (route: string) => {
   if (includedRoutes.includes(route)) return false;

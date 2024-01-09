@@ -19,7 +19,8 @@ export const TokenOptionsSchema = z.object({
   audience: z.string(),
   subject: z.string(),
   expiresIn: z.number(),
-  identifier: z.optional(z.string()),
+  identifier: z.string(),
+  type: z.string(),
 });
 
 export type TokenOptions = z.infer<typeof TokenOptionsSchema>;
@@ -36,7 +37,8 @@ export const TokenPayload = z.object({
   exp: z.number(),
   iat: z.number(),
   jti: z.string(),
-  ide: z.optional(z.string()),
+  ide: z.string(),
+  typ: z.string(),
 });
 
 export type TokenPayload = z.infer<typeof TokenPayload>;
@@ -50,7 +52,7 @@ export const generateToken = async (options: TokenOptions) => {
     }
   }
 
-  const { audience, subject, expiresIn, identifier } = options;
+  const { audience, subject, expiresIn, identifier, type } = options;
 
   const header: TokenHeader = {
     alg: 'HS256',
@@ -65,6 +67,7 @@ export const generateToken = async (options: TokenOptions) => {
     iat: Date.now(),
     jti: crypto.randomBytes(16).toString('hex'),
     ide: identifier,
+    typ: type,
   };
 
   const encodedHeader = Buffer.from(JSON.stringify(header)).toString(

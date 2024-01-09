@@ -25,7 +25,8 @@ export const signin: RequestHandler = async (
     return next(new AppError('validation', 'Incorrect password'));
   }
 
-  const token = await generateUserToken(user.id);
+  // TODO: Change to refresh once MVP is done
+  const token = await generateUserToken(user.id, 'access');
 
   res.status(200).json({
     id: user.id,
@@ -80,4 +81,32 @@ export const signoutAll: RequestHandler = async (
   }
 
   res.status(200).send();
+};
+
+export const generateAccessToken: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (!req.session) {
+    return next(new AppError('unauthorised', 'No session found'));
+  }
+
+  const token = await generateUserToken(req.session.userId, 'access');
+
+  res.status(200).json({ token });
+};
+
+export const generateRefreshToken: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (!req.session) {
+    return next(new AppError('unauthorised', 'No session found'));
+  }
+
+  const token = await generateUserToken(req.session.userId, 'refresh');
+
+  res.status(200).json({ token });
 };

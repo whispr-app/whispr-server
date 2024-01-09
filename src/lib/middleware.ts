@@ -6,7 +6,7 @@ import { version } from './argvHandler';
 import path from 'path';
 import fs from 'fs';
 import { verifyToken } from './tokens';
-import { matchRoute } from './authenticatedRoutes';
+import { matchRoute, refreshRoutes } from './authenticatedRoutes';
 
 declare module 'express' {
   interface Request {
@@ -24,7 +24,29 @@ export const authorisation = async (
       message: 'Preflight check successful.',
     });
 
+  const token = request.headers.authorization?.split(' ')[1];
+
   const requestRoute = request.originalUrl.split('/').slice(1).join('/');
+
+  // TODO: Re-enable refresh token check once MVP is done
+  // if (token && refreshRoutes.includes(requestRoute)) {
+  //   try {
+  //     const tokenCheck = await verifyToken(token);
+
+  //     if (tokenCheck.payload.typ !== 'refresh')
+  //       return next(new AppError('unauthorised', 'Invalid token type'));
+
+  //     request.session = { userId: tokenCheck.payload.sub, token };
+
+  //     return next();
+  //   } catch (e) {
+  //     if (e instanceof InvalidToken) {
+  //       return next(new AppError('validation', e.message));
+  //     }
+
+  //     return next(new AppError('validation', 'Invalid token'));
+  //   }
+  // }
 
   const match = matchRoute(requestRoute);
 
@@ -42,8 +64,6 @@ export const authorisation = async (
         '`Authorization` header must be a Bearer token'
       )
     );
-
-  const token = request.headers.authorization.split(' ')[1];
 
   if (!token) return next(new AppError('unauthorised', 'No token provided'));
 
