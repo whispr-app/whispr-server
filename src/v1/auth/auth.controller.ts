@@ -13,6 +13,11 @@ export const signin: RequestHandler = async (
 ) => {
   const { id, password } = req.body;
 
+  // userId must be hex and 12 bytes long
+  if (!/^[0-9a-fA-F]{24}$/.test(id)) {
+    return next(new AppError('validation', 'Malformed User ID'));
+  }
+
   const user = await getUser(id);
 
   if (!user) {
