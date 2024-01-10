@@ -37,6 +37,8 @@ export const signin: RequestHandler = async (
     id: user.id,
     nickname: user.nickname,
     token,
+    publicKey: user.keyPair?.publicKey,
+    encryptedPrivateKey: user.keyPair?.encryptedPrivateKey,
   });
 };
 

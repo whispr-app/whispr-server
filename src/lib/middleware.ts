@@ -78,7 +78,7 @@ export const authorisation = async (
     next();
   } catch (e) {
     if (e instanceof InvalidToken) {
-      return next(new AppError('validation', e.message));
+      return next(new AppError('unauthorised', e.message));
     }
 
     return next(new AppError('validation', 'Invalid token'));

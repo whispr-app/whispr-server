@@ -78,17 +78,36 @@ export const getUser: RequestHandler<GetUserSchema> = async (
     return next(new AppError('validation', 'Specified user was not found.'));
   }
 
-  if (!user?.keyPair)
-    return next(
-      new AppError(
-        'validation',
-        "Specified user hasn't established key pair yet."
-      )
-    );
+  const sessionUserId = req.session?.userId;
 
   res.status(200).json({
     id: user.id,
     nickname: user.nickname,
-    publicKey: user.keyPair.publicKey,
+    publicKey: user.keyPair?.publicKey,
+    encryptedPrivateKey:
+      sessionUserId === userId && user.keyPair?.encryptedPrivateKey,
+  });
+};
+
+export const getUserPasswordSalt: RequestHandler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userId } = req.params;
+
+  // userId must be hex and 12 bytes long
+  if (!/^[0-9a-fA-F]{24}$/.test(userId)) {
+    return next(new AppError('validation', 'Malformed User ID'));
+  }
+
+  const user = await usersService.getUser(userId);
+
+  if (!user) {
+    return next(new AppError('validation', 'Specified user was not found.'));
+  }
+
+  res.status(200).json({
+    salt: user.password.split(':')[1],
   });
 };

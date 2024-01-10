@@ -26,12 +26,14 @@ export const hashPassword = async (
   password: string,
   salt?: string
 ): Promise<string> => {
+  const existingSalt = password.split(':')[1];
+
   const saltBuffer =
     salt !== undefined ? Buffer.from(salt, 'base64') : randomBytes(32);
 
   const pbkdf2Hash = await pbkdf2Async(password, saltBuffer);
 
-  return `${pbkdf2Hash}:${saltBuffer.toString('base64')}`;
+  return `${pbkdf2Hash}:${existingSalt}:${saltBuffer.toString('base64')}`;
 };
 
 /**
@@ -44,7 +46,7 @@ export const isPasswordValid = async (
   plainTextPassword: string,
   completeHash: string
 ): Promise<boolean> => {
-  const [_, salt] = completeHash.split(':');
+  const salt = completeHash.split(':')[2];
 
   const recalculatedHash = await hashPassword(plainTextPassword, salt);
 
