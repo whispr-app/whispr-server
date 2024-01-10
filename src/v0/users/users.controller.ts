@@ -7,7 +7,7 @@ import {
 } from './users.schemas';
 import * as usersService from './users.service';
 import { AppError } from '@lib/exceptions';
-import { generateUserToken } from 'v1/auth/auth.service';
+import { generateUserToken } from 'v0/auth/auth.service';
 
 export const register: RequestHandler = async (
   req: Request<unknown, unknown, RegisterSchema>,

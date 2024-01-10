@@ -3,7 +3,7 @@ import { SigninSchema } from './auth.schema';
 import prisma from '@lib/prisma';
 import { AppError } from '@lib/exceptions';
 import { generateUserToken, isPasswordValid } from './auth.service';
-import { getUser } from 'v1/users/users.service';
+import { getUser } from 'v0/users/users.service';
 import { verifyToken } from '@lib/tokens';
 
 export const signin: RequestHandler = async (

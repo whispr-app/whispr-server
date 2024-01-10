@@ -1,6 +1,6 @@
 import prisma from '@lib/prisma';
 import { Prisma } from '@prisma/client';
-import { hashPassword } from 'v1/auth/auth.service';
+import { hashPassword } from 'v0/auth/auth.service';
 
 export const createUser = async (user: Prisma.UserCreateInput) => {
   user.password = await hashPassword(user.password);
