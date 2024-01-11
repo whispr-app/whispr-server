@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const SigninSchema = z.object({
   body: z.object({
     password: z.string(),
-    id: z.string(),
+    username: z.string(),
   }),
 });
 export type SigninSchema = z.infer<typeof SigninSchema>['body'];

@@ -14,11 +14,12 @@ export const register: RequestHandler = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { password, nickname } = req.body;
+  const { password, nickname, username } = req.body;
 
   const user = await usersService.createUser({
     password,
     nickname,
+    username,
   });
 
   // TODO: Change to refresh once MVP is done
@@ -65,14 +66,8 @@ export const getUser: RequestHandler<GetUserSchema> = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { userId } = req.params;
-
-  // userId must be hex and 12 bytes long
-  if (!/^[0-9a-fA-F]{24}$/.test(userId)) {
-    return next(new AppError('validation', 'Malformed User ID'));
-  }
-
-  const user = await usersService.getUser(userId);
+  const { username } = req.params;
+  const user = await usersService.getUser(username);
 
   if (!user) {
     return next(new AppError('validation', 'Specified user was not found.'));
@@ -82,26 +77,22 @@ export const getUser: RequestHandler<GetUserSchema> = async (
 
   res.status(200).json({
     id: user.id,
+    username: user.username,
     nickname: user.nickname,
     publicKey: user.keyPair?.publicKey,
     encryptedPrivateKey:
-      sessionUserId === userId && user.keyPair?.encryptedPrivateKey,
+      sessionUserId === user.id && user.keyPair?.encryptedPrivateKey,
   });
 };
 
-export const getUserPasswordSalt: RequestHandler = async (
-  req: Request,
+export const getUserPasswordSalt: RequestHandler<GetUserSchema> = async (
+  req: Request<GetUserSchema>,
   res: Response,
   next: NextFunction
 ) => {
-  const { userId } = req.params;
+  const { username } = req.params;
 
-  // userId must be hex and 12 bytes long
-  if (!/^[0-9a-fA-F]{24}$/.test(userId)) {
-    return next(new AppError('validation', 'Malformed User ID'));
-  }
-
-  const user = await usersService.getUser(userId);
+  const user = await usersService.getUser(username);
 
   if (!user) {
     return next(new AppError('validation', 'Specified user was not found.'));

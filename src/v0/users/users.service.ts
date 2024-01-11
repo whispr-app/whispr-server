@@ -10,6 +10,7 @@ export const createUser = async (user: Prisma.UserCreateInput) => {
     select: {
       id: true,
       nickname: true,
+      username: true,
     },
   });
 };
@@ -32,10 +33,10 @@ export const updateKeyPair = async (
   });
 };
 
-export const getUser = async (userId: string) => {
+export const getUser = async (username: string) => {
   return await prisma.user.findUnique({
     where: {
-      id: userId,
+      username,
     },
     include: {
       keyPair: true,

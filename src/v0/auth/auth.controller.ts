@@ -11,14 +11,9 @@ export const signin: RequestHandler = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { id, password } = req.body;
+  const { username, password } = req.body;
 
-  // userId must be hex and 12 bytes long
-  if (!/^[0-9a-fA-F]{24}$/.test(id)) {
-    return next(new AppError('validation', 'Malformed User ID'));
-  }
-
-  const user = await getUser(id);
+  const user = await getUser(username);
 
   if (!user) {
     return next(new AppError('validation', 'User not found'));
