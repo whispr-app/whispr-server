@@ -1,11 +1,11 @@
 export const excludedRoutes = [
-  'v1/users/register',
-  'v1/users/get-user-password-salt/*',
-  'v1/auth/sign-in',
+  'v0/users/register',
+  'v0/users/get-user-password-salt/*',
+  'v0/auth/sign-in',
 ];
 export const refreshRoutes = [
-  'v1/auth/generate-access-token',
-  'v1/auth/generate-refresh-token',
+  'v0/auth/generate-access-token',
+  'v0/auth/generate-refresh-token',
 ];
 
 export const matchRoute = (route: string): boolean => {
