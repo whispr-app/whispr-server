@@ -14,7 +14,7 @@ import {
 const router = express.Router();
 
 router.post('/register', validate(RegisterSchema), register);
-router.put('/update-key-pair', validate(UpdateKeyPairSchema), updateKeyPairs);
+router.patch('/update-key-pair', validate(UpdateKeyPairSchema), updateKeyPairs);
 router.get('/get-user/:username', validate(GetUserSchema), getUser);
 router.get(
   '/get-user-password-salt/:username',

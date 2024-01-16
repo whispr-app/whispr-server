@@ -20,8 +20,7 @@ if (!version || (version && !version.match(/^(\d+\.)?(\d+\.)?(\*|\d+)$/)))
   throw new NotValidVersion(version || 'undefined');
 
 // Express
-export const app = express();
-expressWs(app);
+export const { app, applyTo, getWss } = expressWs(express());
 
 if (env === 'dev') {
   app.use(

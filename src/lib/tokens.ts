@@ -93,64 +93,50 @@ export const generateToken = async (options: TokenOptions) => {
 };
 
 export const verifyToken = async (token: string) => {
-  console.log('verifying token');
+  try {
+    const [encodedHeader, encodedPayload, signature] = token.split('.');
 
-  const [encodedHeader, encodedPayload, signature] = token.split('.');
+    const header: TokenHeader = JSON.parse(
+      Buffer.from(encodedHeader, 'base64url').toString()
+    );
+    const payload: TokenPayload = JSON.parse(
+      Buffer.from(encodedPayload, 'base64url').toString()
+    );
 
-  const header: TokenHeader = JSON.parse(
-    Buffer.from(encodedHeader, 'base64url').toString()
-  );
-  const payload: TokenPayload = JSON.parse(
-    Buffer.from(encodedPayload, 'base64url').toString()
-  );
+    const calculatedSignature = crypto
+      .createHmac('sha256', privateSigningKey)
+      .update(`${encodedHeader}.${encodedPayload}`)
+      .digest('base64url');
 
-  console.log('fetched header and payload');
+    const tokenExists = await prisma.token.findUnique({
+      where: {
+        jti: payload.jti,
+      },
+    });
 
-  console.log('calculating signature...');
+    if (!tokenExists) {
+      throw new InvalidToken('Token does not exist');
+    }
 
-  const calculatedSignature = crypto
-    .createHmac('sha256', privateSigningKey)
-    .update(`${encodedHeader}.${encodedPayload}`)
-    .digest('base64url');
+    if (signature !== calculatedSignature) {
+      throw new InvalidToken('Signature does not match');
+    }
 
-  console.log('signature', signature);
+    if (payload.exp < Date.now()) {
+      try {
+        await prisma.token.delete({
+          where: {
+            jti: payload.jti,
+          },
+        });
+      } catch {}
+      throw new InvalidToken('Token has expired');
+    }
 
-  console.log('finding token in db...');
-
-  const tokenExists = await prisma.token.findUnique({
-    where: {
-      jti: payload.jti,
-    },
-  });
-
-  console.log('token exists', tokenExists);
-
-  if (!tokenExists) {
-    throw new InvalidToken('Token does not exist');
+    return { header, payload };
+  } catch {
+    throw new InvalidToken('Invalid token');
   }
-
-  if (signature !== calculatedSignature) {
-    throw new InvalidToken('Signature does not match');
-  }
-
-  console.log('token verified, checking expiry...');
-
-  if (payload.exp < Date.now()) {
-    try {
-      console.log('token expired, deleting...');
-
-      await prisma.token.delete({
-        where: {
-          jti: payload.jti,
-        },
-      });
-
-      console.log('token deleted');
-    } catch {}
-    throw new InvalidToken('Token has expired');
-  }
-
-  return { header, payload };
 };
 
 export const revokeToken = async (token: string) => {

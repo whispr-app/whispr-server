@@ -2,6 +2,7 @@ export const excludedRoutes = [
   'v0/users/register',
   'v0/users/get-user-password-salt/*',
   'v0/auth/sign-in',
+  'v0/gateway/*/.websocket',
 ];
 export const refreshRoutes = [
   'v0/auth/generate-access-token',

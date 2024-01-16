@@ -7,6 +7,8 @@ import path from 'path';
 import fs from 'fs';
 import { verifyToken } from './tokens';
 import { matchRoute, refreshRoutes } from './authenticatedRoutes';
+import { Application, WebsocketRequestHandler } from 'express-ws';
+import { WebSocket } from 'ws';
 
 declare module 'express' {
   interface Request {
@@ -68,13 +70,10 @@ export const authorisation = async (
   if (!token) return next(new AppError('unauthorised', 'No token provided'));
 
   try {
-    console.log('awaiting token check');
-
     const tokenCheck = await verifyToken(token);
 
     request.session = { userId: tokenCheck.payload.sub, token };
 
-    console.log('token check successful');
     next();
   } catch (e) {
     if (e instanceof InvalidToken) {
@@ -88,6 +87,33 @@ export const authorisation = async (
 export const validate =
   (schema: AnyZodObject) =>
   async (req: Request<unknown>, res: Response, next: NextFunction) => {
+    try {
+      await schema.parseAsync({
+        body: req.body,
+        query: req.query,
+        params: req.params,
+      });
+      return next();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const invalids = error.issues.map(issue => issue.path.pop());
+        next(
+          new AppError(
+            'validation',
+            `Invalid or missing input${
+              invalids.length > 1 ? 's' : ''
+            } provided for: ${invalids.join(', ')}`
+          )
+        );
+      } else {
+        next(new AppError('validation', 'Invalid input'));
+      }
+    }
+  };
+
+export const validateWs =
+  (schema: AnyZodObject) =>
+  async (ws: WebSocket, req: Request<unknown>, next: NextFunction) => {
     try {
       await schema.parseAsync({
         body: req.body,
@@ -128,7 +154,7 @@ export const errorHandler = (
     });
 };
 
-export const handleRouting = async (app: Express) => {
+export const handleRouting = async (app: Application) => {
   const v = (version as string).split('.')[0];
   try {
     const mainRouter: Router = (
