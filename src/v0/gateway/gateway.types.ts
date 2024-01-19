@@ -3,6 +3,7 @@ export enum OpCode {
   Heartbeat = 1,
   HeartbeatAck = 2,
   Hello = 4,
+  Notification = 5,
 }
 
 export enum GatewayCloseCode {
@@ -23,4 +24,10 @@ export enum GatewayClientEvent {
 export enum GatewayServerEvent {
   Hello = 'HELLO',
   Close = 'CLOSE',
+  MessageCreate = 'MESSAGE_CREATE',
+  MessageUpdate = 'MESSAGE_UPDATE',
+  MessageDelete = 'MESSAGE_DELETE',
+  ChannelCreate = 'CHANNEL_CREATE',
+  ChannelUpdate = 'CHANNEL_UPDATE',
+  ChannelDelete = 'CHANNEL_DELETE',
 }

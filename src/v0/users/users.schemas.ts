@@ -26,3 +26,19 @@ export const GetUserSchema = z.object({
   }),
 });
 export type GetUserSchema = z.infer<typeof GetUserSchema>['params'];
+
+export const GetUserByIdSchema = z.object({
+  params: z.object({
+    userId: z.string(),
+  }),
+});
+export type GetUserByIdSchema = z.infer<typeof GetUserByIdSchema>['params'];
+
+// Channel create
+export const ChannelCreateSchema = z.object({
+  body: z.object({
+    recipients: z.array(z.string()),
+    name: z.string().optional(),
+  }),
+});
+export type ChannelCreateSchema = z.infer<typeof ChannelCreateSchema>['body'];

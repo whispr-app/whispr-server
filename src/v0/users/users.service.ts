@@ -43,3 +43,14 @@ export const getUser = async (username: string) => {
     },
   });
 };
+
+export const getUserById = async (userId: string) => {
+  return await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    include: {
+      keyPair: true,
+    },
+  });
+};

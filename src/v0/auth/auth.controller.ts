@@ -42,6 +42,8 @@ export const signout: RequestHandler = async (
   res: Response,
   next: NextFunction
 ) => {
+  console.log('signout');
+
   if (!req.session) {
     return next(new AppError('unauthorised', 'No session found'));
   }

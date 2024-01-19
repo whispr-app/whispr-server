@@ -6,6 +6,7 @@ import {
   connectionInterval,
   connections,
   constructEvent,
+  notifications,
 } from './gateway.service';
 import { GatewayCloseCode, GatewayServerEvent, OpCode } from './gateway.types';
 import { WebsocketRequestHandler } from 'express-ws';
@@ -20,8 +21,6 @@ export const gateway: WebsocketRequestHandler = async (
   req: Request,
   next: NextFunction
 ) => {
-  console.log('ws');
-
   try {
     await GatewaySchema.parseAsync({
       body: req.body,
@@ -61,6 +60,7 @@ export const gateway: WebsocketRequestHandler = async (
   const uuid = crypto.randomUUID();
   connections.set(uuid, {
     uuid,
+    userId: valid.payload.sub,
     ws,
     lastHeartbeat: Date.now(),
     identified: false,
@@ -72,6 +72,17 @@ export const gateway: WebsocketRequestHandler = async (
     connectionInterval(ws, uuid);
   }, HEARTBEAT_TIMEOUT);
 
+  const unsubscribe = notifications.subscribe((event, data) => {
+    const e = event as GatewayServerEvent;
+    const d = data as {
+      targetIds: string[];
+      data: any;
+    };
+    if (d.targetIds.includes(valid.payload.sub)) {
+      ws.send(constructEvent(OpCode.Notification, e, d.data));
+    }
+  });
+
   ws.send(
     constructEvent(OpCode.Hello, GatewayServerEvent.Hello, {
       heartbeat_interval: HEARTBEAT_INTERVAL,
@@ -81,8 +92,6 @@ export const gateway: WebsocketRequestHandler = async (
 
   ws.on('message', async (data: string) => {
     const msg = JSON.parse(data);
-
-    console.log(msg);
 
     try {
       await GatewayMessageSchema.parseAsync(msg);
@@ -121,9 +130,9 @@ export const gateway: WebsocketRequestHandler = async (
   });
 
   ws.on('close', (code: number, reason: string) => {
-    console.log('closed', code, reason);
-
     connections.delete(uuid);
+
+    unsubscribe();
 
     clearInterval(heartbeatInterval);
   });

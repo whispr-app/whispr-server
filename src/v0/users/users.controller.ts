@@ -1,11 +1,14 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import prisma from '@lib/prisma';
 import {
+  ChannelCreateSchema,
+  GetUserByIdSchema,
   GetUserSchema,
   RegisterSchema,
   UpdateKeyPairSchema,
 } from './users.schemas';
 import * as usersService from './users.service';
+import * as channelsService from 'v0/channels/channels.service';
 import { AppError } from '@lib/exceptions';
 import { generateUserToken } from 'v0/auth/auth.service';
 
@@ -67,7 +70,18 @@ export const getUser: RequestHandler<GetUserSchema> = async (
   next: NextFunction
 ) => {
   const { username } = req.params;
-  const user = await usersService.getUser(username);
+  const user = await (async () => {
+    if (username === '@self') {
+      if (!req.session?.userId) {
+        return next(
+          new AppError('unauthorised', 'No user ID provided in session')
+        );
+      }
+      return await usersService.getUserById(req.session?.userId);
+    } else {
+      return await usersService.getUser(username);
+    }
+  })();
 
   if (!user) {
     return next(new AppError('validation', 'Specified user was not found.'));
@@ -81,7 +95,32 @@ export const getUser: RequestHandler<GetUserSchema> = async (
     nickname: user.nickname,
     publicKey: user.keyPair?.publicKey,
     encryptedPrivateKey:
-      sessionUserId === user.id && user.keyPair?.encryptedPrivateKey,
+      sessionUserId === user.id ? user.keyPair?.encryptedPrivateKey : null,
+  });
+};
+
+export const getUserById: RequestHandler<GetUserByIdSchema> = async (
+  req: Request<GetUserByIdSchema>,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userId } = req.params;
+
+  const user = await usersService.getUserById(userId);
+
+  if (!user) {
+    return next(new AppError('validation', 'Specified user was not found.'));
+  }
+
+  const sessionUserId = req.session?.userId;
+
+  res.status(200).json({
+    id: user.id,
+    username: user.username,
+    nickname: user.nickname,
+    publicKey: user.keyPair?.publicKey,
+    encryptedPrivateKey:
+      sessionUserId === user.id ? user.keyPair?.encryptedPrivateKey : null,
   });
 };
 
@@ -101,4 +140,44 @@ export const getUserPasswordSalt: RequestHandler<GetUserSchema> = async (
   res.status(200).json({
     salt: user.password.split(':')[1],
   });
+};
+
+export const getChannels = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.session?.userId;
+
+  if (!userId) {
+    return next(new AppError('unauthorised', 'No session found'));
+  }
+
+  const channels = await channelsService.getChannels(userId);
+
+  res.status(200).json(channels);
+};
+
+export const createChannel = async (
+  req: Request<unknown, unknown, ChannelCreateSchema>,
+  res: Response,
+  next: NextFunction
+) => {
+  const { recipients, name } = req.body;
+
+  const userId = req.session?.userId;
+
+  if (!userId) {
+    return next(new AppError('unauthorised', 'No session found'));
+  }
+
+  const exists = await channelsService.channelAlreadyExists(userId, recipients);
+
+  if (exists) {
+    return next(new AppError('validation', 'Channel already exists'));
+  }
+
+  const channel = await channelsService.createChannel(userId, recipients, name);
+
+  res.status(201).json(channel);
 };

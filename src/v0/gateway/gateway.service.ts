@@ -1,21 +1,22 @@
+import Event from '@lib/event';
 import { GatewayMessageSchema } from './gateway.schema';
 import { GatewayCloseCode, GatewayServerEvent, OpCode } from './gateway.types';
 import WebSocket from 'ws';
 
-// export const HEARTBEAT_INTERVAL = 25_000;
-// export const HEARTBEAT_TIMEOUT = 60_000;
-
-export const HEARTBEAT_INTERVAL = 5_000;
-export const HEARTBEAT_TIMEOUT = 10_000;
+export const HEARTBEAT_INTERVAL = 25_000;
+export const HEARTBEAT_TIMEOUT = 60_000;
 
 type Connection = {
   uuid: string;
+  userId: string;
   ws: WebSocket;
   lastHeartbeat: number;
   identified: boolean;
 };
 
 export const connections = new Map<string, Connection>();
+
+export const notifications = new Event();
 
 export const connectionInterval = (ws: WebSocket, uuid: string) => {
   const connection = connections.get(uuid);
