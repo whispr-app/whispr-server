@@ -139,7 +139,7 @@ export const createChannel = async (
           ...recipients.map(r => ({
             userId: r,
             canRead: true,
-            canWrite: false,
+            canWrite: true,
           })),
         ],
       },
