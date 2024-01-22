@@ -62,6 +62,8 @@ export const getMessages = async (
     channelId
   );
 
+  console.log(hasAccess);
+
   if (!hasAccess || !hasAccess.read) {
     return next(new AppError('unauthorised', 'User does not have access'));
   }
@@ -156,6 +158,8 @@ export const postMessage: RequestHandler<
     userId,
     channelId
   );
+
+  console.log(hasAccess);
 
   if (!hasAccess || !hasAccess.write) {
     return next(new AppError('unauthorised', 'User does not have access'));
