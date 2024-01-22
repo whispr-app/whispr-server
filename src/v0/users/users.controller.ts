@@ -171,6 +171,10 @@ export const createChannel = async (
     return next(new AppError('unauthorised', 'No session found'));
   }
 
+  if (recipients.includes(userId)) {
+    return next(new AppError('validation', 'Cannot include self as recipient'));
+  }
+
   const exists = await channelsService.channelAlreadyExists(userId, recipients);
 
   if (exists) {
