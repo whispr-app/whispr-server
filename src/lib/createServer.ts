@@ -7,6 +7,7 @@ import cors from 'cors';
 import responseTime from 'response-time';
 import { port, domain, version } from '@lib/argvHandler';
 import { authorisation, errorHandler, handleRouting } from './middleware';
+import { hash } from '@lib/getCommitHash';
 
 // Environment
 const env = process.env.TS_NODE_DEV ? 'dev' : 'prod';
@@ -54,6 +55,7 @@ app.get('/', (req: Request, res: Response) => {
     'port': port,
     'env': env,
     'version': version,
+    'commit-hash': hash,
   });
 });
 
