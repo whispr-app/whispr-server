@@ -9,17 +9,17 @@ pipeline {
     }
     stage('Install deps') {
       steps {
-        sh 'npm install'
+        sh 'pnpm install'
       }
     }
     stage('Build') {
       steps {
-        sh 'npm run build'
+        sh 'pnpm build'
       }
     }
     stage('Deploy') {
       steps {
-        sh 'npm run serve'
+        sh 'pnpm serve --domain=$DOMAIN'
       }
     }
   }
