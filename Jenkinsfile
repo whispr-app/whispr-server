@@ -12,14 +12,15 @@ pipeline {
         sh 'pnpm install'
       }
     }
-    stage('Build') {
-      steps {
-        sh 'pnpm build'
-      }
-    }
+    // stage('Build') {
+    //   steps {
+    //     sh 'pnpm build'
+    //   }
+    // }
     stage('Deploy') {
       steps {
-        sh 'pnpm serve --domain=$DOMAIN'
+        // sh 'pnpm serve --domain=$DOMAIN'
+        sh 'pnpm start --domain=$DOMAIN'
       }
     }
   }
