@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "ts-node-dev --files -r tsconfig-paths/register --exit-child src/index.ts",
     "start": "ts-node --files -r tsconfig-paths/register src/index.ts",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node20.11 --outfile=dist/index.js",
+    "serve": "node dist/index.js",
     "lint": "eslint src",
     "prisma:update": "pnpm exec prisma db push && pnpm exec prisma generate",
     "prisma:studio": "pnpm exec prisma studio",
@@ -24,6 +26,7 @@
     "@types/ws": "^8.5.10",
     "@typescript-eslint/eslint-plugin": "^5.51.0",
     "@typescript-eslint/parser": "^5.0.1",
+    "esbuild": "0.19.12",
     "eslint": "^8.7.0",
     "prettier": "^2.5.1",
     "prisma": "^5.7.1",
