@@ -6,7 +6,7 @@ import bodyparser from 'body-parser';
 import cors from 'cors';
 import responseTime from 'response-time';
 import { port, domain, version } from '@lib/argvHandler';
-import { authorisation, errorHandler, handleRouting } from './middleware';
+import { authorisation, errorHandler } from './middleware';
 import { hash } from '@lib/getCommitHash';
 
 // Environment
@@ -60,7 +60,8 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // Routing
-handleRouting(app).then(() => {
-  // Make sure that error handling is ran last
-  app.use(errorHandler);
-});
+import v0 from 'v0/index';
+
+app.use(`/v0`, v0);
+
+app.use(errorHandler);

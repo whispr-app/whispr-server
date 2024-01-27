@@ -9,6 +9,9 @@ import { verifyToken } from './tokens';
 import { matchRoute, refreshRoutes } from './authenticatedRoutes';
 import { Application, WebsocketRequestHandler } from 'express-ws';
 import { WebSocket } from 'ws';
+import { env } from './env';
+// @ts-ignore
+import routes from '@lib/routes';
 
 declare module 'express' {
   interface Request {
@@ -152,35 +155,4 @@ export const errorHandler = (
           ? error.message
           : "Something went wrong. We're not sure what happened.",
     });
-};
-
-export const handleRouting = async (app: Application) => {
-  const v = (version as string).split('.')[0];
-  try {
-    const mainRouter: Router = (
-      await import(path.join(process.cwd(), `src/v${v}/index.ts`))
-    ).default;
-
-    // sub-routes
-    fs.readdirSync(path.join(process.cwd(), `src/v${v}`)).forEach(
-      async file => {
-        if (file === 'index.ts') return;
-        if (file === 'authenticatedRoutes.ts') return;
-        const router: Router = (
-          await import(
-            path.join(process.cwd(), `src/v${v}/${file}/${file}.router.ts`)
-          )
-        ).default;
-
-        const routeName = file.split('.')[0];
-
-        mainRouter.use(`/${routeName}`, authorisation, router);
-      }
-    );
-
-    app.use(`/v${v}`, mainRouter);
-  } catch (e) {
-    console.error(e);
-    process.exit(1);
-  }
 };

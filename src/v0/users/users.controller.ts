@@ -12,6 +12,8 @@ import * as channelsService from 'v0/channels/channels.service';
 import { AppError } from '@lib/exceptions';
 import { generateUserToken } from 'v0/auth/auth.service';
 
+const usernameRegex = /^[a-zA-Z0-9_-]{3,20}$/;
+
 export const register: RequestHandler = async (
   req: Request<unknown, unknown, RegisterSchema>,
   res: Response,
@@ -19,19 +21,40 @@ export const register: RequestHandler = async (
 ) => {
   const { password, nickname, username } = req.body;
 
-  const user = await usersService.createUser({
-    password,
-    nickname,
-    username,
-  });
+  if (!usernameRegex.test(username)) {
+    return next(
+      new AppError(
+        'validation',
+        'Username must be between 3 and 20 characters and can only contain letters, numbers, underscores and hyphens.'
+      )
+    );
+  }
 
-  // TODO: Change to refresh once MVP is done
-  const token = await generateUserToken(user.id, 'access');
+  try {
+    const user = await usersService.createUser({
+      password,
+      nickname,
+      username,
+    });
 
-  res.status(201).json({
-    id: user.id,
-    token,
-  });
+    if (!user) {
+      return next(new AppError('validation', 'Username already exists'));
+    }
+
+    // TODO: Change to refresh once MVP is done
+    const token = await generateUserToken(user.id, 'access');
+
+    res.status(201).json({
+      id: user.id,
+      token,
+    });
+  } catch (e) {
+    if (e instanceof AppError) {
+      return next(e);
+    }
+
+    return next(new AppError('validation', 'Invalid input'));
+  }
 };
 
 export const updateKeyPairs = async (
