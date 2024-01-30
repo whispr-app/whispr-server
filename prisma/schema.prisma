@@ -52,6 +52,7 @@ model Channel {
   name                   String?
   messages               Message[]
   userChannelPermissions UserChannelPermissions[]
+  lastMessageId          String?                  @db.ObjectId
 }
 
 model Message {

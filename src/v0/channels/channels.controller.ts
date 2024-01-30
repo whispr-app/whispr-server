@@ -116,20 +116,24 @@ export const getMessage = async (
     return next(new AppError('unauthorised', 'User does not have access'));
   }
 
-  const message = await channelsService.getMessage(messageId);
-  console.log(messageId, message);
+  try {
+    const message = await channelsService.getMessage(messageId);
+    console.log(messageId, message);
 
-  if (!message) {
+    if (!message) {
+      return next(new AppError('validation', 'Message not found'));
+    }
+
+    return res.status(200).json({
+      content: await channelsService.getMessageText(message.id, userId),
+      author: message.user,
+      createdAt: message.createdAt,
+      updatedAt: message.updatedAt,
+      id: message.id,
+    });
+  } catch {
     return next(new AppError('validation', 'Message not found'));
   }
-
-  return res.status(200).json({
-    content: await channelsService.getMessageText(message.id, userId),
-    author: message.user,
-    createdAt: message.createdAt,
-    updatedAt: message.updatedAt,
-    id: message.id,
-  });
 };
 
 export const postMessage: RequestHandler<

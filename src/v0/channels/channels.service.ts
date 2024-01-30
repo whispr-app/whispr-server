@@ -148,7 +148,14 @@ export const createChannel = async (
     include: {
       userChannelPermissions: {
         select: {
-          userId: true,
+          user: {
+            select: {
+              id: true,
+              username: true,
+              nickname: true,
+              password: false,
+            },
+          },
         },
       },
     },
@@ -248,6 +255,15 @@ export const createMessage = async (
           },
         },
       },
+    },
+  });
+
+  await prisma.channel.update({
+    where: {
+      id: channelId,
+    },
+    data: {
+      lastMessageId: message.id,
     },
   });
 
