@@ -1,4 +1,6 @@
 <div align="center">
+  <h1><b>This repository is archived, please visit <a href="https://github.com/whispr-app/whispr">the new repository</a> for the latest changes.</b></h1>
+  
   <h1>💬 Whispr Server</h1>
   <p>Decentralised server instance</p>
 
